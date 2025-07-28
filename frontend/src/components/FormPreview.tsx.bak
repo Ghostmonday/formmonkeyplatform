@@ -1,0 +1,232 @@
+import React, { useState } from 'react';
+import { DocumentMetadata, ParsedField } from '../types';
+import { FieldEditor } from './FieldEditor';
+
+interface FormPreviewProps {
+  extractedText?: string;
+  metadata?: DocumentMetadata;
+  fields?: ParsedField[];
+  isLoading: boolean;
+  onFieldUpdate?: (field: ParsedField) => void;
+}
+
+/**
+ * This component provides a document preview with metadata and extracted text.
+ */
+export const FormPreview: React.FC<FormPreviewProps> = ({ 
+  extractedText,
+  metadata,
+  fields,
+  isLoading,
+  onFieldUpdate
+}) => {
+  const [activeTab, setActiveTab] = useState<'preview' | 'fields'>('preview');
+  if (isLoading) {
+    return (
+      <div className="w-full p-8 flex flex-col items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-700 mb-4"></div>
+        <p className="text-gray-600">Loading document preview...</p>
+      </div>
+    );
+  }
+
+  if (!metadata || !extractedText) {
+    return (
+      <div className="w-full p-8 text-center">
+        <p className="text-red-600">No document data available</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-white rounded-lg shadow-md p-6">
+      {/* Tabs */}
+      <div className="border-b border-gray-200 mb-6">
+        <nav className="flex -mb-px">
+          <button
+            className={`py-2 px-4 border-b-2 font-medium text-sm ${
+              activeTab === 'preview'
+                ? 'border-blue-500 text-blue-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+            }`}
+            onClick={() => setActiveTab('preview')}
+          >
+            Document Preview
+          </button>
+          <button
+            className={`py-2 px-4 border-b-2 font-medium text-sm ${
+              activeTab === 'fields'
+                ? 'border-blue-500 text-blue-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+            }`}
+            onClick={() => setActiveTab('fields')}
+          >
+            Review Fields {fields?.length ? `(${fields.length})` : ''}
+          </button>
+        </nav>
+      </div>
+
+      {activeTab === 'preview' ? (
+        <>
+          {/* Document Metadata */}
+          <div className="bg-gray-50 rounded-md p-4 mb-6">
+            <h3 className="text-lg font-medium text-gray-800 mb-3">Document Information</h3>
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+          <div>
+            <p className="text-sm text-gray-500">Filename</p>
+            <p className="font-medium">{metadata.filename}</p>
+          </div>
+          <div>
+            <p className="text-sm text-gray-500">Type</p>
+            <p className="font-medium">{metadata.fileType.split('/')[1]?.toUpperCase()}</p>
+          </div>
+          <div>
+            <p className="text-sm text-gray-500">Uploaded</p>
+            <p className="font-medium">{new Date(metadata.uploadedAt).toLocaleDateString()}</p>
+          </div>
+          <div>
+            <p className="text-sm text-gray-500">Size</p>
+            <p className="font-medium">{(metadata.fileSize / (1024 * 1024)).toFixed(2)} MB</p>
+          </div>
+          <div>
+            <p className="text-sm text-gray-500">Pages</p>
+            <p className="font-medium">{metadata.pageCount}</p>
+          </div>
+          <div>
+            <p className="text-sm text-gray-500">Job ID</p>
+            <p className="font-medium text-gray-600 text-xs">{metadata.jobId}</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Document Content */}
+      <div className="mb-6">
+        <h3 className="text-lg font-medium text-gray-800 mb-3">Document Preview</h3>
+        <div className="bg-gray-50 rounded-md p-4 max-h-72 overflow-y-auto border border-gray-200">
+          <pre className="text-sm whitespace-pre-wrap font-mono text-gray-700">
+            {extractedText.slice(0, 1000)}
+            {extractedText.length > 1000 && '...'}
+          </pre>
+        </div>
+        <p className="text-xs text-gray-500 mt-2">
+          Showing {Math.min(1000, extractedText.length)} of {extractedText.length} characters
+        </p>
+      </div>
+
+      {/* Fields Summary */}
+      {fields && fields.length > 0 && (
+        <div>
+          <h3 className="text-lg font-medium text-gray-800 mb-3">Detected Fields</h3>
+          <p className="text-sm text-gray-600 mb-2">
+            {fields.length} fields detected in document
+          </p>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+            {fields.slice(0, 6).map(field => (
+              <div key={field.id} className="bg-gray-50 p-3 rounded border border-gray-200">
+                <p className="text-xs text-gray-500">{field.name}</p>
+                <p className="font-medium truncate" title={field.value}>
+                  {field.value}
+                </p>
+                <div className="flex items-center mt-1">
+                  <div 
+                    className="h-1 flex-grow rounded-full bg-gray-200 overflow-hidden"
+                    title={`${Math.round(field.confidence * 100)}% confidence`}
+                  >
+                    <div 
+                      className={`h-full ${field.confidence > 0.9 ? 'bg-green-500' : 
+                                        field.confidence > 0.7 ? 'bg-yellow-500' : 'bg-red-500'}`}
+                      style={{ width: `${field.confidence * 100}%` }}
+                    ></div>
+                  </div>
+                  <span className="text-xs ml-2 text-gray-500">
+                    {Math.round(field.confidence * 100)}%
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+          {fields.length > 6 && (
+            <p className="text-xs text-gray-500 mt-2">
+              Showing 6 of {fields.length} fields. See full list in Fields tab.
+            </p>
+          )}
+        </div>
+      )}
+          </>
+        ) : (
+          // Field Review UI
+          <div className="fields-review">
+            <h3 className="text-lg font-medium text-gray-800 mb-3">Review Extracted Fields</h3>
+            <p className="text-sm text-gray-600 mb-4">
+              Please review and correct the extracted field values if necessary.
+            </p>
+            
+            {!fields || fields.length === 0 ? (
+              <div className="bg-gray-50 p-6 text-center rounded-md border border-gray-200">
+                <p className="text-gray-500">No fields were extracted from this document.</p>
+              </div>
+            ) : (
+              <div className="space-y-8">
+                {/* Group fields by category */}
+                {(() => {
+                  // Group fields by category
+                  const categories: { [key: string]: ParsedField[] } = {};
+                  fields.forEach(field => {
+                    const category = field.category;
+                    if (!categories[category]) {
+                      categories[category] = [];
+                    }
+                    categories[category].push(field);
+                  });
+                  
+                  return Object.keys(categories).map(categoryName => (
+                    <div key={categoryName} className="field-category">
+                      <h4 className="text-md font-medium text-gray-700 mb-3 border-b border-gray-200 pb-2">
+                        {categoryName}
+                      </h4>
+                      <div className="space-y-4">
+                        {categories[categoryName].map(field => (
+                        <div key={field.id} className="bg-gray-50 p-4 rounded-md border border-gray-200">
+                          <FieldEditor 
+                            field={field}
+                            onChange={(updatedField) => {
+                              if (onFieldUpdate) onFieldUpdate(updatedField);
+                            }}
+                            autoSave={false}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+                
+                <div className="pt-4 border-t border-gray-200 flex justify-between">
+                  <p className="text-sm text-gray-500 pt-2">
+                    {fields.filter(f => f.isModified).length} of {fields.length} fields modified
+                  </p>
+                  <div>
+                    <button
+                      className="px-4 py-2 mr-3 bg-white border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+                      onClick={() => setActiveTab('preview')}
+                    >
+                      Back to Preview
+                    </button>
+                    <button
+                      className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                      onClick={() => {
+                        // Here would go the code to save all changes and proceed
+                        // For now, we'll just go back to preview
+                        setActiveTab('preview');
+                      }}
+                    >
+                      Save Changes
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+    </div>
+  );
+};

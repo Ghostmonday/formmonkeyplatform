@@ -1,31 +1,75 @@
-/**
-This component provides a summary of all detected fields.
+import React from 'react';
+import { ParsedField } from "../../../../shared/types";
 
-Tasks:
-- Show categorized field list (e.g., Parties, Dates, Payments)
-- Inline edit using FieldEditor
-- Include "Accept All" / "Reset" buttons
-- Display total count of edited fields
+interface PreviewSummaryProps {
+  fields: ParsedField[];
+  onFieldUpdate: (updatedField: ParsedField) => void;
+  onResetAll: () => void;
+  isLoading: boolean;
+  jobId?: string;
+}
 
-Dependencies & Integration:
-- Import components/FieldEditor.tsx for individual field editing
-- Used by pages/Preview.tsx as the main field overview interface
-- Import shared/types.ts for ParsedField categorization and field grouping
-- Use shared/utils.ts for field sorting and categorization logic
-- Call services/api.ts.bulkUpdateFields() for batch operations
-- Import shared/constants.ts for field category definitions
+const PreviewSummary: React.FC<PreviewSummaryProps> = ({
+  fields,
+  onFieldUpdate,
+  onResetAll,
+  isLoading,
+  jobId
+}) => {
+  const totalFields = fields.length;
+  const extractedFields = fields.filter(field => field.value && field.value.trim() !== '').length;
+  const confidenceScore = fields.reduce((sum, field) => sum + (field.confidence || 0), 0) / totalFields || 0;
 
-Field Organization:
-- Group fields by semantic categories (Personal Info, Legal Terms, Financial)
-- Collapsible sections for better organization
-- Search and filter capabilities for large documents
-- Drag-and-drop reordering for user preference
+  return (
+    <div className="preview-summary">
+      <h3>Document Summary</h3>
+      <div className="summary-stats">
+        <div className="stat">
+          <span className="stat-label">Total Fields:</span>
+          <span className="stat-value">{totalFields}</span>
+        </div>
+        <div className="stat">
+          <span className="stat-label">Extracted:</span>
+          <span className="stat-value">{extractedFields}</span>
+        </div>
+        <div className="stat">
+          <span className="stat-label">Confidence:</span>
+          <span className="stat-value">{Math.round(confidenceScore * 100)}%</span>
+        </div>
+      </div>
+      
+      <div className="field-summary">
+        <h4>Extracted Fields</h4>
+        <div className="field-list">
+          {fields.map((field, index) => (
+            <div key={index} className="field-item">
+              <label className="field-name">{field.name}:</label>
+              <input
+                type="text"
+                value={field.value || ''}
+                onChange={(e) => onFieldUpdate({ ...field, value: e.target.value })}
+                className="field-input"
+                disabled={isLoading}
+              />
+              <span className="field-confidence">
+                {field.confidence ? Math.round(field.confidence * 100) : 0}%
+              </span>
+            </div>
+          ))}
+        </div>
+        
+        <div className="summary-actions">
+          <button
+            onClick={onResetAll}
+            disabled={isLoading}
+            className="reset-button"
+          >
+            Reset All Fields
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
 
-Bulk Operations:
-- Accept all AI suggestions with confirmation
-- Reset to original values with undo capability
-- Bulk validation with error reporting
-- Progress tracking for large-scale operations
-
-Use layout that's scalable to large documents.
-*/
+export default PreviewSummary;

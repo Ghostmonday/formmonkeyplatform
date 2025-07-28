@@ -1,0 +1,179 @@
+import React, { useState, useEffect } from 'react';
+import { ParsedField, FieldCategory } from '../types';
+import { useAutoSave } from '../hooks/useAutoSave';
+import SearchBar from './SearchBar';
+import ActionButtons from './ActionButtons';
+import CategorySection from './CategorySection';
+
+interface PreviewSummaryProps {
+  fields: ParsedField[];
+  onFieldUpdate: (field: ParsedField) => void;
+  onResetAll: () => void;
+  isLoading: boolean;
+  jobId?: string;
+}
+
+/**
+ * This component provides a summary of all detected fields.
+ * It allows for field editing, categorization, and bulk operations.
+ */
+const PreviewSummary: React.FC<PreviewSummaryProps> = ({ 
+  fields, 
+  onFieldUpdate, 
+  onResetAll,
+  isLoading,
+  jobId 
+}) => {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [expandedCategories, setExpandedCategories] = useState<FieldCategory[]>(
+    Object.values(FieldCategory)
+  );
+  
+  // Use our custom auto-save hook
+  const { 
+    pendingChanges, 
+    isSaving, 
+    lastSaved,
+    addPendingChange, 
+    saveChanges 
+  } = useAutoSave(jobId);
+  
+  // Register keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Ctrl+S or Cmd+S to save changes
+      if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+        e.preventDefault();
+        saveChanges();
+      }
+      
+      // Alt+A to accept all suggestions
+      if (e.altKey && e.key === 'a') {
+        e.preventDefault();
+        handleAcceptAll();
+      }
+      
+      // Alt+R to reset all fields
+      if (e.altKey && e.key === 'r') {
+        e.preventDefault();
+        onResetAll();
+      }
+    };
+    
+    window.addEventListener('keydown', handleKeyDown as any);
+    return () => window.removeEventListener('keydown', handleKeyDown as any);
+  }, [saveChanges, onResetAll]);
+  
+  // Group fields by category
+  const fieldsByCategory = fields.reduce((acc: Record<string, ParsedField[]>, field) => {
+    if (!acc[field.category]) {
+      acc[field.category] = [];
+    }
+    acc[field.category].push(field);
+    return acc;
+  }, {} as Record<string, ParsedField[]>);
+  
+  // Filter fields by search term
+  const filteredCategories = Object.entries(fieldsByCategory)
+    .map(([category, categoryFields]) => ({
+      category,
+      fields: categoryFields.filter(field => 
+        field.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        field.value.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+    }))
+    .filter(group => group.fields.length > 0);
+  
+  // Count modified fields
+  const modifiedCount = fields.filter(field => field.isModified).length;
+  
+  // Toggle category expansion
+  const toggleCategory = (category: FieldCategory) => {
+    if (expandedCategories.includes(category)) {
+      setExpandedCategories(expandedCategories.filter(c => c !== category));
+    } else {
+      setExpandedCategories([...expandedCategories, category]);
+    }
+  };
+  
+  // Accept all AI suggested values
+  const handleAcceptAll = () => {
+    if (window.confirm('Accept all AI suggested values? This will overwrite any manual edits.')) {
+      onResetAll();
+    }
+  };
+  
+  // Handle field update
+  const handleFieldChange = (updatedField: ParsedField) => {
+    // Add to pending changes if modified
+    if (updatedField.isModified) {
+      addPendingChange({
+        ...updatedField,
+        isSaving: true
+      });
+    }
+    
+    // Pass update to parent component
+    onFieldUpdate(updatedField);
+  };
+
+  if (isLoading) {
+    return (
+      <div className="w-full p-8 flex flex-col items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-700 mb-4"></div>
+        <p className="text-gray-600">Loading fields...</p>
+      </div>
+    );
+  }
+  
+  if (fields.length === 0) {
+    return (
+      <div className="bg-white rounded-lg shadow-md p-6 text-center">
+        <p className="text-gray-600">No fields detected in this document</p>
+      </div>
+    );
+  }
+
+  // Total found results for search
+  const totalResults = filteredCategories.reduce((acc, cat) => acc + cat.fields.length, 0);
+
+  return (
+    <div className="bg-white rounded-lg shadow-md p-6">
+      {/* Search and Actions */}
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6 gap-4">
+        <SearchBar 
+          searchTerm={searchTerm}
+          onSearch={setSearchTerm}
+          resultsCount={searchTerm ? totalResults : undefined}
+          totalCount={searchTerm ? fields.length : undefined}
+        />
+        
+        <ActionButtons
+          isSaving={isSaving}
+          lastSaved={lastSaved}
+          pendingChangesCount={pendingChanges.length}
+          modifiedFieldsCount={modifiedCount}
+          onSave={saveChanges}
+          onAcceptAll={handleAcceptAll}
+          onResetAll={onResetAll}
+        />
+      </div>
+      
+      {/* Field Categories */}
+      <div className="space-y-6">
+        {filteredCategories.map(({ category, fields }) => (
+          <CategorySection
+            key={category}
+            category={category}
+            fields={fields}
+            isExpanded={expandedCategories.includes(category as FieldCategory)}
+            onToggleExpand={() => toggleCategory(category as FieldCategory)}
+            onFieldUpdate={handleFieldChange}
+          />
+        ))}
+      </div>
+    </div>
+  );
+};
+
+export default PreviewSummary;

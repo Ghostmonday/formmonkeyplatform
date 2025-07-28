@@ -1,0 +1,49 @@
+{
+  "folders": [
+    {
+      "name": "🎯 FormMonkey Root",
+      "path": "."
+    },
+    {
+      "name": "🖥️ Frontend",
+      "path": "./frontend"
+    },
+    {
+      "name": "⚙️ Backend", 
+      "path": "./backend"
+    },
+    {
+      "name": "🔗 Shared",
+      "path": "./shared"
+    }
+  ],
+  "settings": {
+    "typescript.preferences.importModuleSpecifier": "relative",
+    "python.defaultInterpreterPath": "./backend/.venv/bin/python",
+    "python.terminal.activateEnvironment": true,
+    "files.exclude": {
+      "**/__pycache__": true,
+      "**/node_modules": true,
+      "**/.git": true,
+      "**/.DS_Store": true,
+      "**/Thumbs.db": true
+    },
+    "search.exclude": {
+      "**/node_modules": true,
+      "**/__pycache__": true,
+      "**/dist": true,
+      "**/build": true
+    }
+  },
+  "extensions": {
+    "recommendations": [
+      "ms-python.python",
+      "ms-python.flake8",
+      "ms-python.black-formatter",
+      "bradlc.vscode-tailwindcss",
+      "esbenp.prettier-vscode",
+      "ms-vscode.vscode-typescript-next",
+      "ms-vscode.vscode-json"
+    ]
+  }
+}

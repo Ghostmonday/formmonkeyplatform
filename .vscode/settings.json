@@ -1,0 +1,37 @@
+{
+  "typescript.preferences.importModuleSpecifier": "relative",
+  "typescript.suggest.autoImports": true,
+  "python.defaultInterpreterPath": "./backend/.venv/bin/python",
+  "python.terminal.activateEnvironment": true,
+  
+  "[typescript]": {
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": "explicit"
+    }
+  },
+  
+  "[python]": {
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": "explicit"
+    }
+  },
+  
+  "files.exclude": {
+    "**/__pycache__": true,
+    "**/node_modules": true,
+    "**/.pytest_cache": true,
+    "**/dist": true,
+    "**/build": true
+  },
+  
+  "files.associations": {
+    "*.env.*": "plaintext"
+  },
+  
+  "emmet.includeLanguages": {
+    "typescript": "html",
+    "typescriptreact": "html"
+  }
+}

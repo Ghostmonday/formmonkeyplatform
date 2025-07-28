@@ -1,0 +1,44 @@
+{
+  "name": "@formmonkey/shared",
+  "version": "1.0.0",
+  "description": "Shared types, constants, and utilities for FormMonkey platform",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc --watch",
+    "clean": "rimraf dist *.d.ts *.js",
+    "type-check": "tsc --noEmit"
+  },
+  "keywords": [
+    "formmonkey",
+    "types",
+    "shared"
+  ],
+  "private": true,
+  "devDependencies": {
+    "rimraf": "^5.0.0",
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "zod": "^3.25.76"
+  },
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "default": "./index.js"
+    },
+    "./types": {
+      "types": "./types.d.ts",
+      "default": "./types.js"
+    },
+    "./constants": {
+      "types": "./constants.d.ts",
+      "default": "./constants.js"
+    },
+    "./utils": {
+      "types": "./utils.d.ts",
+      "default": "./utils.js"
+    }
+  }
+}

@@ -1,0 +1,11 @@
+fastapi>=0.100.0
+pydantic>=2.0.0
+PyMuPDF>=1.22.0  # For PDF text extraction
+python-docx>=0.8.11  # For DOCX text extraction
+python-multipart  # For file upload handling
+regex>=2023.0.0  # Advanced regex support for field extraction
+aioredis>=2.0.0  # For Redis job storage
+uvicorn>=0.22.0  # ASGI server
+python-jose>=3.3.0  # For JWT token handling
+passlib>=1.7.4  # For password hashing
+bcrypt>=4.0.1  # For secure password storage

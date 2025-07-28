@@ -1,3 +1,4 @@
+import { PredictionSource } from "./types";
 /**
 Claude, use this file to define global constants shared between frontend and backend.
 
@@ -15,14 +16,70 @@ Dependencies & Integration:
 - Used by backend/services/parser_engine.py for processing limits
 - Referenced by shared/validators.ts for validation thresholds
 
-Cross-Platform Synchronization:
-- Values must be identical between frontend and backend
-- Use environment-aware constants where needed (dev vs prod)
-- Ensure type compatibility between TypeScript and Python
-- Support for runtime constant validation and override
+// Field prediction source types
+export enum PredictionSource {
+  REGEX = 'regex',
+  ML_MODEL = 'ml_model',
+  MANUAL = 'manual',
+  USER_INPUT = 'user_input'
+}
 
-Keep logic-free. This file should serve as a single source of truth for shared static config.
-*/
+/**
+ * CorrectionReason enum describes reasons why a user might correct an AI prediction
+ */
+export enum CorrectionReason {
+  INCORRECT_VALUE = 'incorrect_value',
+  INCOMPLETE_VALUE = 'incomplete_value',
+  FORMATTING_ERROR = 'formatting_error',
+  WRONG_FIELD = 'wrong_field',
+  DUPLICATE_ENTRY = 'duplicate_entry',
+  OTHER = 'other'
+}
+
+/**
+ * AI prediction confidence thresholds for determining UI treatment and automation
+ */
+export const AI_PREDICTION_CONFIDENCE = {
+  // Below this threshold, predictions are considered unreliable
+  LOW: 0.3,
+  // Between LOW and MEDIUM, predictions require user verification
+  MEDIUM: 0.7,
+  // Above HIGH, predictions can be auto-accepted
+  HIGH: 0.9
+} as const;
+
+// Confidence threshold constants
+export const CONFIDENCE_THRESHOLDS = {
+  low: 0.3,
+  medium: 0.6,
+  high: 0.85
+} as const;
+
+// Learning rate parameters for model adaptation
+export const LEARNING_RATES = {
+  USER_CORRECTION: 0.8,   // High weight for explicit corrections
+  TEMPLATE_MATCH: 0.6,    // Medium-high weight for template matches
+  SIMILAR_DOCUMENT: 0.4,  // Medium weight for similar documents
+  DEFAULT_RATE: 0.1       // Conservative default learning rate
+} as const;
+
+// Field prediction settings
+export const FIELD_PREDICTION_SETTINGS = {
+  MIN_CONFIDENCE_FOR_AUTOFILL: 0.7,
+  MIN_CONFIDENCE_FOR_SUGGESTION: 0.4,
+  MAX_SUGGESTIONS_PER_FIELD: 3,
+  CONTEXT_WINDOW_SIZE: 100  // Characters before/after for context window
+} as const;
+
+/**
+ * Cross-Platform Synchronization:
+ * - Values must be identical between frontend and backend
+ * - Use environment-aware constants where needed (dev vs prod)
+ * - Ensure type compatibility between TypeScript and Python
+ * - Support for runtime constant validation and override
+ * 
+ * Keep logic-free. This file should serve as a single source of truth for shared static config.
+ */
 
 // TODO [0]: Define file type constants, endpoint names, validation ranges
 // TODO [0.1]: Add environment-specific constant overrides with validation
