@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ParsedField, FieldCategory } from "./shared/types";
+import { ParsedField, FieldCategory } from '../types';
 import { saveFieldUpdates } from '../services/api';
 import FieldEditor from './FieldEditor';
 

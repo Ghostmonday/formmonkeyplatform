@@ -1,5 +1,5 @@
 import React from 'react';
-import { ParsedField } from "../../../../shared/types";
+import { ParsedField } from '../types';
 import FieldEditor from './FieldEditor';
 
 interface FieldListProps {

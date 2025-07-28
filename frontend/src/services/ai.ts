@@ -1,7 +1,7 @@
 /**
  * [AI_SCHEMA_P4] - API services for AI predictions and corrections
  */
-import { AIPredictedField, UserCorrection } from "../../../../shared/types";
+import { AIPredictedField, UserCorrection } from '../types';
 import {
   validateAIPrediction,
   validateUserCorrection

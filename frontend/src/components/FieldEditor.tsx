@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ParsedField, FieldType } from "../../../../shared/types";
+import { ParsedField, FieldType } from '../types';
 import { useFieldValidation } from '../hooks/useValidation';
 
 interface FieldEditorProps {

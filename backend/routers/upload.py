@@ -1,20 +1,29 @@
 
 from fastapi import APIRouter, UploadFile, File, HTTPException, status, Depends
+from pydantic import BaseModel
+from typing import Optional
 import uuid
 import os
 # from config import get_settings  # Uncomment if using dynamic config
 from services.parser_engine import process_document
 from services.ai_assistance import analyze_document
-from services.storage_service import store_file
+# from services.storage_service import store_file
+try:
+    from services.storage_service import store_file
+except ModuleNotFoundError:
+    # Fallback: adjust the import if running as a script or in a different context
+    import sys
+    import os
+    sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+    from services.storage_service import store_file
 from compliance.audit_log import log_upload_event
-from auth.auth_utils import get_current_user, User
-
-# Import shared models
-from shared.types import UploadResponse
+from auth.auth_utils import get_current_user
 
 router = APIRouter()
 
-# Using shared UploadResponse model from shared/types.py
+class UploadResponse(BaseModel):
+    job_id: str
+    message: str
 
 ALLOWED_EXTENSIONS = {".pdf", ".docx"}
 MAX_FILE_SIZE = 10 * 1024 * 1024  # 10MB
@@ -22,13 +31,10 @@ MAX_FILE_SIZE = 10 * 1024 * 1024  # 10MB
 @router.post("/upload", response_model=UploadResponse, status_code=status.HTTP_202_ACCEPTED)
 async def upload_document(
     file: UploadFile = File(...),
-    user: User = Depends(get_current_user)
+    user=Depends(get_current_user)
 ):
     # Validate file extension
-    if file.filename is None:
-        raise HTTPException(status_code=400, detail="Filename is required.")
-    
-    ext: str = os.path.splitext(file.filename)[1].lower()
+    ext = os.path.splitext(file.filename)[1].lower()
     if ext not in ALLOWED_EXTENSIONS:
         raise HTTPException(status_code=400, detail="Only PDF and DOCX files are allowed.")
 
@@ -47,19 +53,14 @@ async def upload_document(
         raise HTTPException(status_code=400, detail="MIME type does not match file extension.")
 
     # Generate unique job ID
-    job_id: str = str(uuid.uuid4())
-    safe_filename: str = f"{job_id}{ext}"
+    job_id = str(uuid.uuid4())
+    safe_filename = f"{job_id}{ext}"
 
     # Store file securely
-    file_path: str = await store_file(safe_filename, contents)
+    file_path = await store_file(safe_filename, contents)
 
     # Log upload event
-    log_upload_event(
-        user_id=user.id, 
-        filename=file.filename, 
-        job_id=job_id, 
-        size=len(contents)
-    )
+    log_upload_event(user_id=user.id, filename=file.filename, job_id=job_id, size=len(contents))
 
     # Trigger async document processing (parser + AI)
     # (Consider using a background task or job queue in production)
@@ -80,10 +81,7 @@ async def upload_document_minimal(file: UploadFile = File(...)):
     No authentication, virus scanning or processing - just validation and storage.
     """
     # Validate file extension
-    if file.filename is None:
-        raise HTTPException(status_code=400, detail="Filename is required.")
-        
-    ext: str = os.path.splitext(file.filename)[1].lower()
+    ext = os.path.splitext(file.filename)[1].lower()
     if ext not in ALLOWED_EXTENSIONS:
         raise HTTPException(status_code=400, detail="Only PDF and DOCX files are allowed.")
 
@@ -93,10 +91,10 @@ async def upload_document_minimal(file: UploadFile = File(...)):
         raise HTTPException(status_code=413, detail="File exceeds 10MB size limit.")
 
     # Generate unique job ID
-    job_id: str = str(uuid.uuid4())
+    job_id = str(uuid.uuid4())
     
     # In a real implementation, we would store the file here
-    # file_path: str = await store_file(f"{job_id}{ext}", contents)
+    # file_path = await store_file(f"{job_id}{ext}", contents)
 
     return UploadResponse(job_id=job_id, message="File uploaded successfully.")
 

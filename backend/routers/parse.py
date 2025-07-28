@@ -1,19 +1,20 @@
 # Document parsing API endpoints for FormMonkey legal document processing.
 # All endpoints are standardized to match the shared/types.py definitions.
 
-from fastapi import APIRouter, HTTPException, status, Depends, Body
-from typing import List, Dict, Any
+from fastapi import APIRouter, HTTPException, status, Depends, Body, BackgroundTasks
+from typing import Optional, List, Dict, Any
 from datetime import datetime
+import asyncio
 import uuid
 import traceback
 
 # Import ALL shared type definitions - no local redefinitions
 from shared.types import (
-    ProcessingStatus, PredictionSource,
+    ProcessingStatus, PredictionSource, CorrectionReason,
     ParseStatusResponse, FieldPosition, AIPredictedField,
     UserCorrection, DocumentMetadata, FieldsResponse,
-    FieldCorrection,
-    CorrectionsRequest, CorrectionsResponse
+    FieldPrediction, FieldCorrection, EnhancedFieldCorrection,
+    CorrectionsRequest, CorrectionsResponse, JobData
 )
 
 # Import services
@@ -127,7 +128,7 @@ async def get_field_predictions(job_id: str, user: User = Depends(get_current_us
         )
         
         # Use AI fields directly from the prediction if available
-        ai_fields: List[AIPredictedField] = field_predictions.get("ai_fields", [])
+        ai_fields = field_predictions.get("ai_fields", [])
         
         # If no AI fields available, transform legacy fields to new AI fields format
         if not ai_fields:
@@ -214,7 +215,7 @@ async def submit_field_corrections(
         profile_updated = False
         
         # Convert enhanced corrections to UserCorrection objects
-        user_corrections: List[UserCorrection] = []
+        user_corrections = []
         for ec in corrections.enhanced_corrections:
             user_correction = UserCorrection(
                 originalPrediction={
@@ -232,7 +233,7 @@ async def submit_field_corrections(
             # Process traditional corrections
             if updated_count > 0:
                 # Convert FieldCorrection objects to dicts
-                corrections_as_dicts: List[Dict[str, Any]] = [correction.model_dump() for correction in corrections.corrections]
+                corrections_as_dicts = [correction.model_dump() for correction in corrections.corrections]
                 profile_updated = await update_user_field_preferences(
                     user_id=user.id,
                     field_corrections=corrections_as_dicts,
@@ -242,7 +243,7 @@ async def submit_field_corrections(
             # Process enhanced corrections
             if enhanced_count > 0:
                 # Convert enhanced corrections to the format expected by update_user_field_preferences
-                legacy_format_corrections: List[Dict[str, Any]] = []
+                legacy_format_corrections = []
                 for ec in corrections.enhanced_corrections:
                     legacy_format_corrections.append(
                         FieldCorrection(

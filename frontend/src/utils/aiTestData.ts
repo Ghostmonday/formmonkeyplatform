@@ -10,7 +10,7 @@ import {
   FieldType,
   PredictionSource,
   UserCorrection
-} from "../../../../shared/types";
+} from '../types';
 
 /**
  * Sample AI predictions for testing

@@ -1,5 +1,5 @@
 import React from 'react';
-import { ParsedField } from "../../../../shared/types";
+import { ParsedField } from '../types';
 
 interface FormPreviewProps {
   extractedText?: string;

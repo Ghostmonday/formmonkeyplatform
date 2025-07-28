@@ -1,4 +1,3 @@
-import { PredictionSource } from "./types";
 /**
 Claude, use this file to define global constants shared between frontend and backend.
 
@@ -22,18 +21,6 @@ export enum PredictionSource {
   ML_MODEL = 'ml_model',
   MANUAL = 'manual',
   USER_INPUT = 'user_input'
-}
-
-/**
- * CorrectionReason enum describes reasons why a user might correct an AI prediction
- */
-export enum CorrectionReason {
-  INCORRECT_VALUE = 'incorrect_value',
-  INCOMPLETE_VALUE = 'incomplete_value',
-  FORMATTING_ERROR = 'formatting_error',
-  WRONG_FIELD = 'wrong_field',
-  DUPLICATE_ENTRY = 'duplicate_entry',
-  OTHER = 'other'
 }
 
 /**
@@ -77,7 +64,7 @@ export const FIELD_PREDICTION_SETTINGS = {
  * - Use environment-aware constants where needed (dev vs prod)
  * - Ensure type compatibility between TypeScript and Python
  * - Support for runtime constant validation and override
- * 
+ *
  * Keep logic-free. This file should serve as a single source of truth for shared static config.
  */
 

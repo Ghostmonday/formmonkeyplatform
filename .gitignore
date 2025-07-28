@@ -205,3 +205,5 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# TODO: [REFACTOR] Ensure .pnpm-store and node_modules are ignored - Reason: Prevent workspace pollution from package manager artifacts

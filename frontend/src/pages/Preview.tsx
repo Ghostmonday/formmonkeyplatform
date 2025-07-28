@@ -4,7 +4,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import FormPreview from '../components/FormPreview';
 import PreviewSummary from '../components/PreviewSummary';
 import { getJobStatus } from '../services/api';
-import { JobStatus, ParsedField } from "../../../../shared/types";
+import { JobStatus, ParsedField } from '../types';
 
 /**
  * Preview Page Component

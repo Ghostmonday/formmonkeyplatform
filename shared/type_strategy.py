@@ -48,7 +48,7 @@ class DeprecationStrategy:
         """Generate a deprecation notice for a type."""
         return f"""
         # DEPRECATED: This type is deprecated and will be removed in a future version.
-        # Import from shared.schemas instead: from shared.schemas import {type_name}
+        # Import from shared.types instead: from shared.types import {type_name}
         """
     
     @staticmethod
@@ -58,8 +58,8 @@ class DeprecationStrategy:
         Migration Guide for {type_name}:
         
         1. Replace imports:
-           - Frontend: import {{ {type_name} }} from '@shared/schemas';
-           - Backend: from shared.schemas import {type_name}
+           - Frontend: import {{ {type_name} }} from '@shared/types';
+           - Backend: from shared.types import {type_name}
            
         2. Update field names:
            - Frontend uses camelCase

@@ -33,7 +33,7 @@ Error Handling:
 Return Promises with typed responses. Handle all request edge cases cleanly.
 */
 
-import { FieldCategory, FieldType, JobStatus, ParsedField } from "../../../../shared/types";
+import { FieldCategory, FieldType, JobStatus, ParsedField } from '../types';
 
 // Mock data for development
 const MOCK_DELAY = 800;

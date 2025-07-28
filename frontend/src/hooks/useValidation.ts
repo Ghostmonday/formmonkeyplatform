@@ -7,7 +7,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { validateField as baseValidateField } from '../services/api';
-import { ParsedField } from "../../../../shared/types";
+import { ParsedField } from '../types';
 
 // Simple validation types for frontend-only workspace
 interface ValidationResult {

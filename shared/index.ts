@@ -1,67 +1,16 @@
 /**
  * Type Export Helper for FormMonkey
  * 
- * This file provides a consolidated export of all shared types and constants.
+ * This file provides a convenient way to import all shared types.
  * Frontend code should import types from this file rather than
- * defining local variants or importing directly from individual files.
+ * defining local variants.
  */
 
-// Re-export all types from types.ts except those that might conflict with constants.ts
-export {
-  // Types
-  UploadStatus,
-  UploadMetadata,
-  TextLocation,
-  TextFieldPrediction,
-  FieldType,
-  FieldPrediction,
-  AIPredictedField,
-  UserCorrection,
-  ProfilePatch,
-  ProcessingStatus,
-  DocumentMetadata,
-  ParseStatusType,
-  ParseStatus,
-  
-  // Schemas
-  UploadMetadataSchema,
-  TextLocationSchema,
-  TextFieldPredictionSchema,
-  FieldPredictionSchema,
-  AIPredictedFieldSchema,
-  UserCorrectionSchema,
-  ProfilePatchSchema,
-  DocumentMetadataSchema,
-  ParseStatusSchema,
-  
-  // Validation helpers
-  validateFileExtension,
-  validateFileSize,
-  
-  // Type aliases
-  TextFieldPredictionValidated,
-  UploadMetadataValidated,
-  DocumentMetadataValidated,
-  ParseStatusValidated,
-  
-  // Constants
-  API_ENDPOINTS
-} from "./types";
+// Re-export all types from the main types.ts file
+export * from './types';
 
-// Re-export constants from constants.ts
-export {
-  // Enums
-  PredictionSource,
-  CorrectionReason,
-  
-  // Constants
-  AI_PREDICTION_CONFIDENCE,
-  CONFIDENCE_THRESHOLDS,
-  LEARNING_RATES,
-  FIELD_PREDICTION_SETTINGS,
-  SUPPORTED_FILE_TYPES,
-  CONFIG_KEYS
-} from './constants';
+// Re-export all constants
+export * from './constants';
 
 /**
  * Type Compatibility Functions

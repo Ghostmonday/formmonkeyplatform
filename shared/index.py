@@ -1,13 +1,13 @@
 """
 Type Export Helper for FormMonkey
 
-This file provides a convenient way to import all shared schemas.
-Backend code should import schemas from this file rather than
+This file provides a convenient way to import all shared types.
+Backend code should import types from this file rather than
 defining local variants.
 """
 
-# Re-export all schemas from the main schemas.py file
-from .schemas import *
+# Re-export all types from the main types.py file
+from .types import *
 
 # Re-export all constants
 from .constants import *

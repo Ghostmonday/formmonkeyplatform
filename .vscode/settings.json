@@ -1,3 +1,4 @@
+# TODO: [REFACTOR] Update VSCode settings for monorepo - Reason: Improves developer experience
 {
   "typescript.preferences.importModuleSpecifier": "relative",
   "typescript.suggest.autoImports": true,

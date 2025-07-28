@@ -11,6 +11,7 @@ Usage:
 
 import os
 import re
+import json
 from typing import Dict, List, Set, Tuple, Optional
 from dataclasses import dataclass
 
@@ -99,12 +100,12 @@ def generate_migration_instructions(matches: Dict[str, List[TypeMatch]]) -> str:
             if match.is_typescript:
                 instructions.append("\n  Replace with:")
                 instructions.append("  ```typescript")
-                instructions.append(f"  import {{ {type_name} }} from '@shared/schemas';")
+                instructions.append(f"  import {{ {type_name} }} from '@shared/types';")
                 instructions.append("  ```")
             else:
                 instructions.append("\n  Replace with:")
                 instructions.append("  ```python")
-                instructions.append(f"  from shared.schemas import {type_name}")
+                instructions.append(f"  from shared.types import {type_name}")
                 instructions.append("  ```")
             
             instructions.append("")

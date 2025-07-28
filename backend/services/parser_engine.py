@@ -7,6 +7,7 @@ import fitz  # PyMuPDF
 import docx
 from typing import Dict, Any, Optional, Union
 from datetime import datetime
+import json
 import traceback
 
 from shared.types import JobData, ProcessingStatus

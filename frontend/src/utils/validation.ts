@@ -9,7 +9,7 @@ import {
   DocumentMetadata,
   ParsedField,
   UserCorrection
-} from "../../../../shared/types"; /**
+} from '../types'; /**
  * Validate an AI-predicted field
  * @param data The data to validate
  * @returns Validated data or throws an error

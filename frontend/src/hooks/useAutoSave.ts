@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { saveFieldUpdates } from '../services/api';
-import { ParsedField } from "../../../../shared/types";
+import { ParsedField } from '../types';
 
 /**
  * Custom hook for handling auto-save functionality

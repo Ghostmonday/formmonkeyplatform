@@ -1,5 +1,5 @@
 import React from 'react';
-import { ParsedField, FieldCategory } from "../../../../shared/types";
+import { ParsedField, FieldCategory } from '../types';
 import FieldList from './FieldList';
 
 interface CategorySectionProps {

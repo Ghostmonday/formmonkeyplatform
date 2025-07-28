@@ -1,9 +1,0 @@
-FormMonkey Import Fixes Report
-==================================================
-
-Total fixes: 0
-Duplicate files removed: 0
-
-Fixed files:
-
-Removed files:

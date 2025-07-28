@@ -3,7 +3,7 @@
 
 import os
 import json
-from typing import Dict, Any, Optional, List, Union, Tuple
+from typing import Dict, Any, Optional, List, Union
 from datetime import datetime, timedelta
 
 # Try to import aioredis, fall back gracefully if not available
@@ -33,9 +33,9 @@ async def get_redis_pool():
     global _redis_pool
     if USE_REDIS and redis_available and _redis_pool is None:
         try:
-            # Use aioredis v2 syntax with type ignore since we handle type safety at runtime
+            # Use aioredis v2 syntax
             if aioredis is not None:
-                _redis_pool = aioredis.from_url(REDIS_URL)  # type: ignore
+                _redis_pool = aioredis.from_url(REDIS_URL)
         except Exception as e:
             print(f"Failed to connect to Redis: {e}. Using in-memory storage.")
     return _redis_pool
@@ -62,15 +62,14 @@ async def store_job(job_data: Union[JobData, Dict[str, Any]]) -> None:
     job_data.update_timestamp()
     
     # Get job ID and serialized data
-    job_id: str = job_data.job_id
-    serialized_data: str = job_data.model_dump_json()
+    job_id = job_data.job_id
+    serialized_data = job_data.model_dump_json()
     
     if USE_REDIS:
         pool = await get_redis_pool()
         if pool:
             try:
                 # Store in Redis with expiration (aioredis v2 syntax)
-                # Type annotation issues are avoided by using Any
                 await pool.set(
                     f"job:{job_id}", 
                     serialized_data,
@@ -98,10 +97,10 @@ async def get_job(job_id: str) -> Optional[JobData]:
         if pool:
             try:
                 # Get from Redis
-                job_data_bytes: Optional[Union[bytes, str]] = await pool.get(f"job:{job_id}")
+                job_data_bytes = await pool.get(f"job:{job_id}")
                 if job_data_bytes:
                     # Decode bytes to string for JSON parsing
-                    job_data_str = job_data_bytes.decode('utf-8') if isinstance(job_data_bytes, bytes) else str(job_data_bytes)
+                    job_data_str: str = job_data_bytes.decode('utf-8') if isinstance(job_data_bytes, bytes) else str(job_data_bytes)
                     return JobData.model_validate_json(job_data_str)
                 return None
             except Exception as e:
@@ -176,16 +175,9 @@ async def delete_job(job_id: str) -> bool:
         if pool:
             try:
                 # Delete from Redis
-                result: Optional[int] = await pool.delete(f"job:{job_id}")
+                result = await pool.delete(f"job:{job_id}")
                 # Redis delete returns the number of keys deleted
-                # We convert to int to ensure type safety
-                delete_count: int = 0
-                if result is not None:
-                    try:
-                        delete_count = int(result)
-                    except (TypeError, ValueError):
-                        delete_count = 0
-                return delete_count > 0
+                return int(result) > 0 if result is not None else False
             except Exception as e:
                 print(f"Redis deletion error: {e}. Falling back to in-memory storage.")
     
@@ -217,104 +209,46 @@ async def list_jobs(
             try:
                 # Scan Redis for matching keys
                 jobs: List[JobData] = []
-                cursor_val: int = 0
-                pattern: str = "job:*"
+                cursor: int = 0
+                pattern = "job:*"
                 
                 while True:
-                    # Redis scan returns (cursor, keys) tuple as Any
-                    # Type safety is handled through runtime checks
-                    scan_result: Any = await pool.scan(cursor_val, match=pattern, count=100)
-                    
-                    # Safely handle the scan result
-                    cursor_raw: Any = None
-                    keys_raw: Any = None
-                    
-                    # Extract data based on the result type
-                    if isinstance(scan_result, (list, tuple)):
-                        try:
-                            if len(scan_result) == 2:  # type: ignore
-                                cursor_raw = scan_result[0]
-                                keys_raw = scan_result[1]
-                            else:
+                    # Redis scan returns (cursor, keys) tuple
+                    scan_result = await pool.scan(cursor, match=pattern, count=100)
+                    if isinstance(scan_result, (list, tuple)) and len(scan_result) == 2:
+                        cursor, keys = scan_result
+                        # Convert cursor to int if it's bytes
+                        if isinstance(cursor, bytes):
+                            cursor = int(cursor.decode('utf-8'))
+                        elif not isinstance(cursor, int):
+                            cursor = int(cursor) if cursor else 0
+                            
+                        for key in keys:
+                            if len(jobs) >= limit:
                                 break
-                        except (TypeError, ValueError, IndexError):
+                                
+                            # Decode key if it's bytes
+                            key_str = key.decode('utf-8') if isinstance(key, bytes) else str(key)
+                            job_data_bytes = await pool.get(key_str)
+                            if job_data_bytes:
+                                try:
+                                    job_data_str = job_data_bytes.decode('utf-8') if isinstance(job_data_bytes, bytes) else str(job_data_bytes)
+                                    job = JobData.model_validate_json(job_data_str)
+                                    
+                                    # Apply filters
+                                    if user_id and job.user_id != user_id:
+                                        continue
+                                    if status and job.status != status:
+                                        continue
+                                    
+                                    jobs.append(job)
+                                except Exception as e:
+                                    print(f"Error parsing job data: {e}")
+                                    continue
+                        
+                        if cursor == 0 or len(jobs) >= limit:
                             break
                     else:
-                        break
-                    
-                    # Convert cursor to int safely
-                    cursor_val = 0  # Reset to default
-                    if cursor_raw is not None:
-                        if isinstance(cursor_raw, bytes):
-                            try:
-                                cursor_val = int(cursor_raw.decode('utf-8'))
-                            except (ValueError, UnicodeDecodeError):
-                                cursor_val = 0
-                        elif isinstance(cursor_raw, int):
-                            cursor_val = cursor_raw
-                        elif cursor_raw:  # Only try conversion if not None/empty
-                            # Use a type ignore to handle cursor_raw since we're handling all cases at runtime
-                            try:
-                                cursor_val = int(str(cursor_raw))  # type: ignore
-                            except (ValueError, TypeError):
-                                cursor_val = 0
-                    
-                    # Process keys (could be bytes or strings)
-                    if not isinstance(keys_raw, (list, tuple)):
-                        break
-                    
-                    # Use index-based access instead of iterator
-                    # to avoid "key_raw" typing issues
-                    for i in range(len(keys_raw)):  # type: ignore
-                        if len(jobs) >= limit:
-                            break
-                            
-                        # Get the key and handle it safely
-                        try:
-                            # Use type ignore since we're checking types at runtime
-                            item: Any = keys_raw[i]  # type: ignore
-                            
-                            # Decode key if it's bytes
-                            key_str: str = ""
-                            if isinstance(item, bytes):
-                                try:
-                                    key_str = item.decode('utf-8')
-                                except UnicodeDecodeError:
-                                    continue  # Skip invalid keys
-                            elif item is not None:
-                                key_str = str(item)  # type: ignore
-                                
-                            if not key_str:  # Skip empty keys
-                                continue
-                        except (IndexError, TypeError):
-                            continue
-                            
-                        # Get job data
-                        job_data_bytes: Optional[Union[bytes, str]] = await pool.get(key_str)
-                        
-                        if job_data_bytes:
-                            try:
-                                # Process job data safely
-                                job_data_str: str
-                                if isinstance(job_data_bytes, bytes):
-                                    job_data_str = job_data_bytes.decode('utf-8')
-                                else:
-                                    job_data_str = str(job_data_bytes)
-                                    
-                                job = JobData.model_validate_json(job_data_str)
-                                
-                                # Apply filters
-                                if user_id and job.user_id != user_id:
-                                    continue
-                                if status and job.status != status:
-                                    continue
-                                
-                                jobs.append(job)
-                            except Exception as e:
-                                print(f"Error parsing job data: {e}")
-                                continue
-                    
-                    if cursor_val == 0 or len(jobs) >= limit:
                         break
                 
                 return jobs

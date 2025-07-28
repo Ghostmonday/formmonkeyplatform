@@ -1,0 +1,15 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Phase 0 \u2013 Type Focus Only",
+      "type": "pwa-node",
+      "request": "launch",
+      "program": "${workspaceFolder}/packages/types/index.ts",
+      "cwd": "${workspaceFolder}/packages/types",
+      "skipFiles": [
+        "<node_internals>/**"
+      ]
+    }
+  ]
+}
