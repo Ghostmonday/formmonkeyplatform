@@ -1,0 +1,12 @@
+{
+  "extends": "./tsconfig.base.json",
+  "files": [],
+  "references": [
+    { "path": "./packages/types" },
+    { "path": "./packages/core" },
+    { "path": "./packages/utils" },
+    { "path": "./packages/validators" },
+    { "path": "./apps/frontend" },
+    { "path": "./apps/cli" }
+  ]
+}

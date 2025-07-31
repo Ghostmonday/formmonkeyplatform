@@ -1,0 +1,58 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "lib": ["ES2020", "DOM"],
+    "module": "commonjs",
+    "baseUrl": ".",
+    "moduleResolution": "node",
+    "strict": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
+    "checkJs": true,
+    "allowJs": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "composite": true,
+    "noEmitOnError": true,
+    "noImplicitAny": true,
+    "paths": {
+      "@frommonkey/core": [
+        "./packages/core/src"
+      ],
+      "@frommonkey/core/*": [
+        "./packages/core/src/*"
+      ],
+      "@frommonkey/types": [
+        "./packages/types/src"
+      ],
+      "@frommonkey/types/*": [
+        "./packages/types/src/*"
+      ],
+      "@frommonkey/ui": [
+        "./packages/ui/src"
+      ],
+      "@frommonkey/ui/*": [
+        "./packages/ui/src/*"
+      ],
+      "@frommonkey/utils": [
+        "./packages/utils/src"
+      ],
+      "@frommonkey/utils/*": [
+        "./packages/utils/src/*"
+      ],
+      "@frommonkey/validators": [
+        "./packages/validators/src"
+      ],
+      "@frommonkey/validators/*": [
+        "./packages/validators/src/*"
+      ]
+    }
+  },
+  "exclude": [
+    "**/node_modules",
+    "**/dist",
+    "**/build"
+  ]
+}

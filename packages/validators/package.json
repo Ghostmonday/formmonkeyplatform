@@ -1,0 +1,25 @@
+{
+  "name": "@frommonkey/validators",
+  "version": "0.1.0",
+  "description": "Validation schemas and functions for FromMonkey",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "clean": "rimraf dist",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@frommonkey/types": "workspace:*",
+    "zod": "^3.22.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "rimraf": "^5.0.0",
+    "typescript": "^5.3.0"
+  },
+  "publishConfig": {
+    "access": "restricted"
+  }
+}
